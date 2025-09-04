@@ -10,7 +10,7 @@ Aplikasi ini memiliki dua fitur utama:
 
 ## Tampilan Aplikasi
 Berikut adalah contoh antarmuka dari aplikasi ini.  
-*(Tambahkan screenshot di sini jika tersedia)*
+
 ![Tampilan Aplikasi](docs/screenshot.png)
 ---
 
