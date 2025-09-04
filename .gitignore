@@ -1,0 +1,10 @@
+Python
+pycache/
+*.pyc
+*.pyo
+*.pyd
+
+Lingkungan virtual (Virtual environment)
+.venv/
+env/
+venv/
