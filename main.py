@@ -5,6 +5,15 @@ from PIL import Image
 import os
 import sys
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 def remove_background_and_autocrop_enhanced(input_path, output_path, alpha_threshold=15):
     """
     Menghilangkan background dan memotong area transparan berlebih dari sebuah gambar.
@@ -91,10 +100,17 @@ class App(customtkinter.CTk):
         super().__init__()
 
         # Konfigurasi jendela utama
-        self.title("Aplikasi Editor Gambar")
+        self.title("Image Editor Python")
         self.geometry("600x600")
         self.grid_columnconfigure(0, weight=1)
 
+        # BARIS INI DITAMBAHKAN UNTUK MENGATUR IKON JENDELA
+        # Pastikan Anda memiliki file app_icon.ico di folder yang sama
+        try:
+            self.iconbitmap(resource_path("app_icon.ico"))
+        except Exception:
+            pass # Lanjutkan tanpa ikon jika file tidak ditemukan
+        
         # Buat tabview untuk menampung fitur
         self.tabview = customtkinter.CTkTabview(self)
         self.tabview.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
