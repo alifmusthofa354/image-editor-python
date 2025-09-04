@@ -8,3 +8,8 @@ Lingkungan virtual (Virtual environment)
 .venv/
 env/
 venv/
+
+# Direktori dan file hasil dari PyInstaller
+/build/
+/dist/
+*.spec
