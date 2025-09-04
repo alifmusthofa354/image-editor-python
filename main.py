@@ -55,44 +55,13 @@ def resize_image_and_save(input_path, output_path, new_width, new_height):
         print(f"Error resizing image {input_path}: {e}")
         return False
 
-def compress_image_and_save(input_path, output_path, quality, file_format):
-    """
-    Mengkompres gambar dan menyimpannya dengan format tertentu.
-    """
-    try:
-        with Image.open(input_path) as img:
-            # Konversi gambar ke RGB jika format output tidak mendukung transparansi
-            if img.mode in ('RGBA', 'P') and file_format in ['JPEG', 'JPG', 'BMP']:
-                img = img.convert('RGB')
-
-            # Atur parameter kualitas, hanya berlaku untuk JPEG dan WebP
-            params = {}
-            if file_format in ['JPEG', 'WEBP']:
-                params['quality'] = quality
-            
-            # Khusus untuk PNG, gunakan optimize
-            if file_format == 'PNG':
-                params['optimize'] = True
-                params['compress_level'] = int(quality / 10) # Skala 1-9 dari kualitas 0-100
-            
-            # Ubah ekstensi file jika format output berbeda
-            base, _ = os.path.splitext(output_path)
-            output_path_with_ext = f"{base}.{file_format.lower()}"
-
-            img.save(output_path_with_ext, format=file_format, **params)
-            return True
-    except Exception as e:
-        print(f"Error compressing image {input_path}: {e}")
-        return False
-
-
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
         # Konfigurasi jendela utama
         self.title("Aplikasi Editor Gambar")
-        self.geometry("600x600")
+        self.geometry("600x550")
         self.grid_columnconfigure(0, weight=1)
 
         # Buat tabview untuk menampung fitur
@@ -107,18 +76,11 @@ class App(customtkinter.CTk):
         self.tab_resize = self.tabview.add("Ubah Ukuran Gambar")
         self.tab_resize.grid_columnconfigure(0, weight=1)
 
-        # Buat tab baru untuk fitur Kompres Gambar
-        self.tab_compress = self.tabview.add("Kompres Gambar")
-        self.tab_compress.grid_columnconfigure(0, weight=1)
-
         # --- UI untuk Tab Hapus Background ---
         self.setup_background_tab(self.tab_bg)
 
         # --- UI untuk Tab Ubah Ukuran Gambar ---
         self.setup_resize_tab(self.tab_resize)
-        
-        # --- UI untuk Tab Kompres Gambar ---
-        self.setup_compress_tab(self.tab_compress)
 
     def setup_background_tab(self, tab):
         self.bg_mode_var = customtkinter.StringVar(value="single")
@@ -195,51 +157,6 @@ class App(customtkinter.CTk):
         self.resize_status_label = customtkinter.CTkLabel(tab, text="", text_color="green", font=("Roboto", 14))
         self.resize_status_label.grid(row=8, column=0, pady=(10, 20), padx=20)
 
-    def setup_compress_tab(self, tab):
-        self.compress_mode_var = customtkinter.StringVar(value="single")
-        self.compress_mode_label = customtkinter.CTkLabel(tab, text="Pilih mode:")
-        self.compress_mode_label.grid(row=0, column=0, pady=(10, 0), padx=20, sticky="w")
-        
-        self.compress_single_mode_radio = customtkinter.CTkRadioButton(tab, text="Satu File", variable=self.compress_mode_var, value="single", command=lambda: self.update_compress_ui(tab))
-        self.compress_single_mode_radio.grid(row=1, column=0, pady=(0, 5), padx=20, sticky="w")
-        
-        self.compress_batch_mode_radio = customtkinter.CTkRadioButton(tab, text="Mode Batch (Folder)", variable=self.compress_mode_var, value="batch", command=lambda: self.update_compress_ui(tab))
-        self.compress_batch_mode_radio.grid(row=2, column=0, pady=(0, 10), padx=20, sticky="w")
-
-        self.compress_input_label = customtkinter.CTkLabel(tab, text="Pilih gambar input:")
-        self.compress_input_label.grid(row=3, column=0, pady=(10, 0), padx=20, sticky="w")
-        self.compress_input_entry = customtkinter.CTkEntry(tab, placeholder_text="Jalur file input")
-        self.compress_input_entry.grid(row=4, column=0, pady=(0, 10), padx=20, sticky="ew")
-        
-        self.compress_select_button = customtkinter.CTkButton(tab, text="Pilih Gambar", command=lambda: self.select_files(tab, "compress"))
-        self.compress_select_button.grid(row=5, column=0, pady=5, padx=20, sticky="ew")
-
-        self.quality_frame = customtkinter.CTkFrame(tab)
-        self.quality_frame.grid(row=6, column=0, pady=10, padx=20, sticky="ew")
-        self.quality_frame.grid_columnconfigure(0, weight=1)
-        self.quality_frame.grid_columnconfigure(1, weight=1)
-
-        self.quality_label = customtkinter.CTkLabel(self.quality_frame, text="Kualitas Kompresi (0-100):")
-        self.quality_label.grid(row=0, column=0, pady=(10, 0), padx=10, sticky="w")
-        self.quality_value_label = customtkinter.CTkLabel(self.quality_frame, text="Nilai: 80")
-        self.quality_value_label.grid(row=0, column=1, pady=(10, 0), padx=10, sticky="e")
-        
-        self.quality_slider = customtkinter.CTkSlider(self.quality_frame, from_=0, to=100, number_of_steps=101, command=self.update_quality_label)
-        self.quality_slider.grid(row=1, column=0, columnspan=2, pady=(0, 10), padx=10, sticky="ew")
-        self.quality_slider.set(80)
-
-        self.format_label = customtkinter.CTkLabel(tab, text="Pilih Format Output:")
-        self.format_label.grid(row=7, column=0, pady=(10, 0), padx=20, sticky="w")
-        self.format_option_menu = customtkinter.CTkOptionMenu(tab, values=["JPEG", "PNG", "WEBP", "ICO", "BMP"])
-        self.format_option_menu.grid(row=8, column=0, pady=(0, 10), padx=20, sticky="ew")
-        
-        self.compress_process_button = customtkinter.CTkButton(tab, text="Kompres Gambar", command=lambda: self.process_image(tab, "compress"), fg_color="#3B82F6")
-        self.compress_process_button.grid(row=9, column=0, pady=10, padx=20, sticky="ew")
-
-        self.compress_status_label = customtkinter.CTkLabel(tab, text="", text_color="green", font=("Roboto", 14))
-        self.compress_status_label.grid(row=10, column=0, pady=(10, 20), padx=20)
-
-
     def update_bg_ui(self, tab):
         current_mode = self.bg_mode_var.get()
         if current_mode == "single":
@@ -264,37 +181,18 @@ class App(customtkinter.CTk):
         self.resize_input_entry.delete(0, customtkinter.END)
         self.resize_status_label.configure(text="")
 
-    def update_compress_ui(self, tab):
-        current_mode = self.compress_mode_var.get()
-        if current_mode == "single":
-            self.compress_select_button.configure(text="Pilih Gambar Input")
-            self.compress_input_entry.configure(placeholder_text="Jalur file input")
-        else:
-            self.compress_select_button.configure(text="Pilih Folder Input")
-            self.compress_input_entry.configure(placeholder_text="Jalur folder input")
-        
-        self.compress_input_entry.delete(0, customtkinter.END)
-        self.compress_status_label.configure(text="")
-
     def update_threshold_label(self, value):
         self.bg_threshold_value_label.configure(text=f"Nilai: {int(value)}")
-
-    def update_quality_label(self, value):
-        self.quality_value_label.configure(text=f"Nilai: {int(value)}")
 
     def select_files(self, tab, feature):
         if feature == "bg":
             mode_var = self.bg_mode_var
             input_entry = self.bg_input_entry
             status_label = self.bg_status_label
-        elif feature == "resize":
+        else: # feature == "resize"
             mode_var = self.resize_mode_var
             input_entry = self.resize_input_entry
             status_label = self.resize_status_label
-        else: # feature == "compress"
-            mode_var = self.compress_mode_var
-            input_entry = self.compress_input_entry
-            status_label = self.compress_status_label
             
         current_mode = mode_var.get()
         if current_mode == "single":
@@ -323,7 +221,7 @@ class App(customtkinter.CTk):
             status_label = self.bg_status_label
             threshold_value = int(self.bg_threshold_slider.get())
             current_mode = self.bg_mode_var.get()
-        elif feature == "resize":
+        else: # feature == "resize"
             input_path = self.resize_input_entry.get()
             status_label = self.resize_status_label
             current_mode = self.resize_mode_var.get()
@@ -337,12 +235,6 @@ class App(customtkinter.CTk):
             except ValueError:
                 status_label.configure(text="Masukkan angka valid untuk lebar dan tinggi.", text_color="red")
                 return
-        else: # feature == "compress"
-            input_path = self.compress_input_entry.get()
-            status_label = self.compress_status_label
-            quality_value = int(self.quality_slider.get())
-            selected_format = self.format_option_menu.get()
-            current_mode = self.compress_mode_var.get()
 
         if not input_path:
             status_label.configure(text="Pilih file atau folder input terlebih dahulu.", text_color="red")
@@ -364,7 +256,7 @@ class App(customtkinter.CTk):
                     status_label.configure(text="Proses dibatalkan.", text_color="orange")
                     return
                 success = remove_background_and_autocrop_enhanced(input_path, output_path, alpha_threshold=threshold_value)
-            elif feature == "resize":
+            else: # feature == "resize"
                 file_name_without_ext, file_ext = os.path.splitext(os.path.basename(input_path))
                 output_file_name = f"{file_name_without_ext}_{new_width}x{new_height}.png"
                 output_path = filedialog.asksaveasfilename(
@@ -377,19 +269,6 @@ class App(customtkinter.CTk):
                     status_label.configure(text="Proses dibatalkan.", text_color="orange")
                     return
                 success = resize_image_and_save(input_path, output_path, new_width, new_height)
-            else: # feature == "compress"
-                file_name_without_ext = os.path.splitext(os.path.basename(input_path))[0]
-                output_file_name = f"{file_name_without_ext}_{quality_value}_kompresi.{selected_format.lower()}"
-                output_path = filedialog.asksaveasfilename(
-                    title="Simpan sebagai",
-                    initialfile=output_file_name,
-                    defaultextension=f".{selected_format.lower()}",
-                    filetypes=((f"{selected_format} files", f"*.{selected_format.lower()}"), ("All files", "*.*"))
-                )
-                if not output_path:
-                    status_label.configure(text="Proses dibatalkan.", text_color="orange")
-                    return
-                success = compress_image_and_save(input_path, output_path, quality_value, selected_format)
             
             if success:
                 status_label.configure(text=f"Berhasil! File disimpan di: {output_path}", text_color="green")
@@ -423,14 +302,10 @@ class App(customtkinter.CTk):
                 if feature == "bg":
                     output_file = os.path.join(output_folder, f"output_{os.path.splitext(filename)[0]}.png")
                     success = remove_background_and_autocrop_enhanced(input_file, output_file, alpha_threshold=threshold_value)
-                elif feature == "resize":
+                else: # feature == "resize"
                     file_name_without_ext, file_ext = os.path.splitext(filename)
                     output_file = os.path.join(output_folder, f"{file_name_without_ext}_{new_width}x{new_height}{file_ext}")
                     success = resize_image_and_save(input_file, output_file, new_width, new_height)
-                else: # feature == "compress"
-                    file_name_without_ext = os.path.splitext(filename)[0]
-                    output_file = os.path.join(output_folder, f"{file_name_without_ext}_{quality_value}_kompresi.{selected_format.lower()}")
-                    success = compress_image_and_save(input_file, output_file, quality_value, selected_format)
 
                 if success:
                     processed_count += 1
@@ -446,3 +321,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Terjadi kesalahan fatal saat memulai aplikasi: {e}")
         sys.exit(1)
+    
