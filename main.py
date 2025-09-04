@@ -106,10 +106,14 @@ class App(customtkinter.CTk):
 
         # BARIS INI DITAMBAHKAN UNTUK MENGATUR IKON JENDELA
         # Pastikan Anda memiliki file app_icon.ico di folder yang sama
+        # BARIS INI ADALAH PERBAIKANNYA
         try:
-            self.iconbitmap(resource_path("app_icon.ico"))
-        except Exception:
-            pass # Lanjutkan tanpa ikon jika file tidak ditemukan
+            # Gunakan resource_path dengan jalur yang benar
+            self.iconbitmap(resource_path(os.path.join('assets', 'icons', 'CustomTkinter_icon_Windows.ico')))
+        except Exception as e:
+            # Opsional: Cetak error untuk debugging (saat di mode dev)
+            print(f"Error saat mengatur ikon: {e}")
+            pass
         
         # Buat tabview untuk menampung fitur
         self.tabview = customtkinter.CTkTabview(self)
