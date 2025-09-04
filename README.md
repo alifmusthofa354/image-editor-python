@@ -11,7 +11,7 @@ Aplikasi ini memiliki dua fitur utama:
 ## Tampilan Aplikasi
 Berikut adalah contoh antarmuka dari aplikasi ini.  
 *(Tambahkan screenshot di sini jika tersedia)*
-
+![Tampilan Aplikasi](docs/screenshot.png)
 ---
 
 ## Prasyarat
@@ -33,7 +33,7 @@ git clone https://github.com/alifmusthofa354/image-editor-python.git
 Masuk ke folder proyek yang baru saja Anda klon:
 
 ```bash
-cd aplikasi-editor-gambar
+cd image-editor-python
 ```
 
 ### 3. Instalasi Pustaka (Libraries) yang Dibutuhkan
